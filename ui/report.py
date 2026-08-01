@@ -195,8 +195,7 @@ font-size:16px;
                 pdf = generate_pdf(
                     summary,
                     ai_story,
-                    forecast_text,
-                    chart_paths
+                    forecast_text
                 )
 
             with open(pdf, "rb") as file:
