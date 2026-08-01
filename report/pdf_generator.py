@@ -1,6 +1,6 @@
 
 import re
-from turtle import st
+
 
 from reportlab.platypus import Image
 from datetime import datetime
@@ -60,7 +60,7 @@ def format_ai_story(ai_story):
 # GENERATE PDF
 # =====================================================
 
-def generate_pdf(summary, ai_story, forecast_text, chart_paths):
+def generate_pdf(summary, ai_story, forecast_text):
 
     filename = "DataSage_AI_Report.pdf"
 
@@ -121,33 +121,7 @@ def generate_pdf(summary, ai_story, forecast_text, chart_paths):
 
     story.append(Spacer(1, 20))
 
-    # =====================================================
-# VISUAL ANALYTICS
-# =====================================================
-
-    
-
-    if chart_paths:
-        story.append(
-        Paragraph(
-            "<b>📊 Visual Analytics</b>",
-            styles["Heading2"]
-        )
-    )
-
-    story.append(Spacer(1, 10))
-
-    for chart in chart_paths[:3]:
-
-        img = Image(
-            chart,
-            width=450,
-            height=260
-        )
-
-        story.append(img)
-
-        story.append(Spacer(1, 15))
+  
     # =====================================================
     # AI EXECUTIVE SUMMARY
     # =====================================================
