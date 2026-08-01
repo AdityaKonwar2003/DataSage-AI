@@ -191,10 +191,12 @@ font-size:16px;
                 "Generating professional report..."
             ):
 
+                chart_paths = st.session_state.get("report_charts", [])
                 pdf = generate_pdf(
                     summary,
                     ai_story,
-                    forecast_text
+                    forecast_text,
+                    chart_paths
                 )
 
             with open(pdf, "rb") as file:

@@ -43,9 +43,6 @@ if "ai_story" not in st.session_state:
 if "forecast_explanation" not in st.session_state:
     st.session_state["forecast_explanation"] = ""
 
-if "dataset_summary" not in st.session_state:
-    st.session_state["dataset_summary"] = ""
-
 
 
 # ---------------- SIDEBAR ---------------- #
@@ -170,41 +167,86 @@ Supported formats
 
 • XLS
 """
-)
-
-    uploaded_file = st.file_uploader(
-        "Choose a CSV or Excel file",
-        type=["csv", "xlsx", "xls"]
     )
 
-    if uploaded_file is not None:
+    # ==========================================
+    # Dataset already loaded
+    # ==========================================
 
-        df = load_data(uploaded_file)
+    if "df" in st.session_state:
 
-        df, cleaning_report = clean_data(df)
+        st.success("✅ Dataset already loaded.")
 
-        dataset_info = detect_dataset(df)
+        st.info(
+f"""
+Rows: **{st.session_state['row_count']}**
 
-        semantic_info = detect_semantics(df)
+Columns: **{st.session_state['column_count']}**
 
-        st.session_state["df"] = df
-        st.session_state["cleaning_report"] = cleaning_report
-        st.session_state["dataset_info"] = dataset_info
-        st.session_state["semantic_info"] = semantic_info
+Missing Values: **{st.session_state['missing_count']}**
 
-        st.session_state["dataset_summary"] = build_ai_summary(
-            df,
-            dataset_info,
-            semantic_info
+Duplicate Rows: **{st.session_state['duplicate_count']}**
+"""
         )
 
-        st.session_state["row_count"] = df.shape[0]
-        st.session_state["column_count"] = df.shape[1]
-        st.session_state["missing_count"] = int(df.isna().sum().sum())
-        st.session_state["duplicate_count"] = int(df.duplicated().sum())
+        if st.button("🔄 Upload New Dataset"):
 
-        st.success("✅ Dataset uploaded successfully!")
+            keys = [
+                "df",
+                "cleaning_report",
+                "dataset_info",
+                "semantic_info",
+                "dataset_summary",
+                "ai_story",
+                "forecast",
+                "forecast_chart",
+                "forecast_growth",
+                "forecast_days",
+                "forecast_target",
+                "forecast_explanation"
+            ]
 
+            for key in keys:
+                st.session_state.pop(key, None)
+
+            st.rerun()
+
+    else:
+
+        uploaded_file = st.file_uploader(
+            "Choose a CSV or Excel file",
+            type=["csv", "xlsx", "xls"]
+        )
+
+        if uploaded_file is not None:
+
+            df = load_data(uploaded_file)
+
+            df, cleaning_report = clean_data(df)
+
+            dataset_info = detect_dataset(df)
+
+            semantic_info = detect_semantics(df)
+
+            st.session_state["df"] = df
+            st.session_state["cleaning_report"] = cleaning_report
+            st.session_state["dataset_info"] = dataset_info
+            st.session_state["semantic_info"] = semantic_info
+
+            st.session_state["dataset_summary"] = build_ai_summary(
+                df,
+                dataset_info,
+                semantic_info
+            )
+
+            st.session_state["row_count"] = df.shape[0]
+            st.session_state["column_count"] = df.shape[1]
+            st.session_state["missing_count"] = int(df.isna().sum().sum())
+            st.session_state["duplicate_count"] = int(df.duplicated().sum())
+
+            st.success("✅ Dataset uploaded successfully!")
+
+    
         # =====================================================
 # CHECK DATASET
 # =====================================================

@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 
 from analysis.statistics import get_descriptive_statistics
@@ -62,6 +63,14 @@ def show_analysis(df, dataset_info, semantic_info):
         recommendations
     )
 
+    # =====================================================
+    # Create folder for report charts
+    # =====================================================
+
+    os.makedirs("report/charts", exist_ok=True)
+
+    chart_paths = []
+
     if not charts:
 
         st.warning(
@@ -86,6 +95,28 @@ def show_analysis(df, dataset_info, semantic_info):
             chart,
             width="stretch"
         )
+
+        # ------------------------------------------
+        # Save chart for PDF
+        # ------------------------------------------
+
+        chart_path = (
+            f"report/charts/chart_{len(chart_paths)+1}.png"
+        )
+
+        try:
+
+            chart.write_image(
+                chart_path,
+                width=1200,
+                height=700
+            )
+
+            chart_paths.append(chart_path)
+
+        except Exception as e:
+
+            pass
 
         st.success(
             get_chart_insight(
@@ -113,6 +144,12 @@ def show_analysis(df, dataset_info, semantic_info):
                 )
 
             st.info(explanation)
+
+    # =====================================================
+    # Save chart paths for PDF
+    # =====================================================
+
+    st.session_state["report_charts"] = chart_paths
 
     # =====================================================
     # CORRELATION ANALYSIS

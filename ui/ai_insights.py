@@ -25,33 +25,36 @@ def show_ai(df, dataset_info, semantic_info):
     # AI REPORT
     # =====================================================
 
-    generate = st.button("✨ Generate AI Insights")
-
-    if generate:
+    if st.button("✨ Generate AI Insights"):
 
         with st.spinner("Analyzing your dataset..."):
 
             story = generate_story(summary)
 
-        # Save AI Story for Report Page
         if story:
 
             st.session_state["ai_story"] = story
 
             st.success("✅ Analysis Complete")
 
-            st.markdown(story)
-
-            st.download_button(
-                label="📥 Download AI Summary",
-                data=story,
-                file_name="AI_Summary.txt",
-                mime="text/plain"
-            )
-
         else:
 
             st.error("Failed to generate AI insights.")
+
+    # =====================================================
+    # ALWAYS SHOW SAVED AI STORY
+    # =====================================================
+
+    if st.session_state.get("ai_story"):
+
+        st.markdown(st.session_state["ai_story"])
+
+        st.download_button(
+            label="📥 Download AI Summary",
+            data=st.session_state["ai_story"],
+            file_name="AI_Summary.txt",
+            mime="text/plain"
+        )
 
     # =====================================================
     # DATASET CHAT
