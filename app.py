@@ -46,7 +46,7 @@ if "forecast_explanation" not in st.session_state:
 if "dataset_summary" not in st.session_state:
     st.session_state["dataset_summary"] = ""
 
-# ---------------- SIDEBAR ---------------- #
+
 
 # ---------------- SIDEBAR ---------------- #
 
@@ -102,98 +102,124 @@ with st.sidebar:
 
 # ---------------- HEADER ---------------- #
 
-st.markdown(
-    """
-# 📊 DataSage AI
+st.markdown("""
+<div style="
+padding:35px;
+border-radius:18px;
+background:linear-gradient(135deg,#2563eb,#172A45);
+color:white;
+">
 
-### AI-Powered Business Intelligence Platform
+<h1 style="margin-bottom:5px;">
+📊 DataSage AI
+</h1>
 
-Transform raw datasets into **interactive dashboards,
-AI-generated business insights, machine learning forecasts,
-and executive reports**.
+<h3 style="margin-top:0;">
+AI-Powered Business Intelligence Platform
+</h3>
 
----
-"""
+<p style="font-size:18px;">
+Transform raw datasets into interactive dashboards,
+AI-generated business insights,
+Machine Learning forecasts,
+and professional executive reports.
+</p>
+
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+# =====================================================
+# NAVIGATION
+# =====================================================
+
+page = st.radio(
+      "Navigation",
+    [
+        "📂 Upload",
+        "📊 Analytics",
+        "🤖 AI Insights",
+        "🔮 Forecast",
+        "📄 Report"
+    ],
+    horizontal=True,
+    label_visibility="collapsed"
+
 )
-
-col1, col2, col3, col4 = st.columns(4)
-
-with col1:
-    st.info("📊 Smart Analytics")
-
-with col2:
-    st.info("🤖 AI Insights")
-
-with col3:
-    st.info("📈 Forecasting")
-
-with col4:
-    st.info("📄 Reports")
 
 st.markdown("---")
-# ---------------- FILE UPLOAD ---------------- #
-
-st.header("📂 Upload Your Dataset")
-st.caption(
-    "Supported formats: CSV, XLSX and XLS files"
-)
-uploaded_file = st.file_uploader(
-    "Choose a CSV or Excel file",
-    type=["csv", "xlsx", "xls"]
-)
 
 # ---------------- MAIN APP ---------------- #
 
-if uploaded_file is not None:
+# =====================================================
+# UPLOAD PAGE
+# =====================================================
 
-    # Load Dataset
-    df = load_data(uploaded_file)
+if page == "📂 Upload":
 
-    # Clean Dataset
-    df, cleaning_report = clean_data(df)
+    st.header("📂 Upload Your Dataset")
 
-    # Detect Dataset
-    dataset_info = detect_dataset(df)
+    st.info(
+"""
+Supported formats
 
-    # Detect Semantics
-    semantic_info = detect_semantics(df)
+• CSV
 
-    st.success("✅ Dataset uploaded successfully. "
-    "Explore the tabs above to analyze your data."
+• XLSX
+
+• XLS
+"""
 )
 
-    # Build summary (used later by Report)
-    summary = build_ai_summary(
-        df,
-        dataset_info,
-        semantic_info
-    )
-    st.session_state["dataset_summary"] = summary
-
-    # Temporary placeholders
-    ai_story = """
-Generate AI Insights first to include them in the report.
-"""
-
-    forecast_text = """
-Generate Forecast first to include forecast results.
-"""
-
-    # ---------------- TABS ---------------- #
-
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(
-        [
-            "📊 Overview",
-            "📈 Analysis",
-            "🤖 AI Insights",
-            "🔮 Forecast",
-            "📄 Report"
-        ]
+    uploaded_file = st.file_uploader(
+        "Choose a CSV or Excel file",
+        type=["csv", "xlsx", "xls"]
     )
 
-    # ---------------- OVERVIEW ---------------- #
+    if uploaded_file is not None:
 
-    with tab1:
+        df = load_data(uploaded_file)
+
+        df, cleaning_report = clean_data(df)
+
+        dataset_info = detect_dataset(df)
+
+        semantic_info = detect_semantics(df)
+
+        st.session_state["df"] = df
+        st.session_state["cleaning_report"] = cleaning_report
+        st.session_state["dataset_info"] = dataset_info
+        st.session_state["semantic_info"] = semantic_info
+
+        st.session_state["dataset_summary"] = build_ai_summary(
+            df,
+            dataset_info,
+            semantic_info
+        )
+
+        st.session_state["row_count"] = df.shape[0]
+        st.session_state["column_count"] = df.shape[1]
+        st.session_state["missing_count"] = int(df.isna().sum().sum())
+        st.session_state["duplicate_count"] = int(df.duplicated().sum())
+
+        st.success("✅ Dataset uploaded successfully!")
+
+        # =====================================================
+# CHECK DATASET
+# =====================================================
+
+if "df" in st.session_state:
+
+    df = st.session_state["df"]
+
+    cleaning_report = st.session_state["cleaning_report"]
+
+    dataset_info = st.session_state["dataset_info"]
+
+    semantic_info = st.session_state["semantic_info"]
+
+    if page == "📊 Analytics":
 
         show_overview(
             df,
@@ -201,9 +227,7 @@ Generate Forecast first to include forecast results.
             dataset_info
         )
 
-    # ---------------- ANALYSIS ---------------- #
-
-    with tab2:
+        st.markdown("---")
 
         show_analysis(
             df,
@@ -211,9 +235,7 @@ Generate Forecast first to include forecast results.
             semantic_info
         )
 
-    # ---------------- AI ---------------- #
-
-    with tab3:
+    elif page == "🤖 AI Insights":
 
         show_ai(
             df,
@@ -221,17 +243,21 @@ Generate Forecast first to include forecast results.
             semantic_info
         )
 
-    # ---------------- FORECAST ---------------- #
-
-    with tab4:
+    elif page == "🔮 Forecast":
 
         show_forecast(
             df,
             semantic_info
         )
 
-    # ---------------- REPORT ---------------- #
-
-    with tab5:
+    elif page == "📄 Report":
 
         show_report()
+
+else:
+
+    if page != "📂 Upload":
+
+        st.warning(
+            "⚠ Please upload a dataset first."
+        )

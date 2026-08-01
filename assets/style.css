@@ -1,57 +1,468 @@
-/* ==========================================================
-   DATASAGE AI THEME
-========================================================== */
+/* =========================================================
+   DataSage AI - Global Theme
+========================================================= */
 
-/* Main page */
-.main {
-    background-color: #F8FAFC;
+/* Theme Variables (works in Light & Dark Mode) */
+
+:root{
+
+    --primary:#2563EB;
+
+    --secondary:#172A45;
+
+    --card-bg:var(--secondary-background-color);
+
+    --card-text:var(--text-color);
+
+    --border:rgba(120,120,120,.25);
+
 }
 
-/* Sidebar */
-section[data-testid="stSidebar"] {
-    background-color: #1E293B;
+/* =========================================================
+   Main App
+========================================================= */
+
+.block-container{
+
+    padding-top:2rem;
+
+    padding-bottom:2rem;
+
+    max-width:1500px;
+
 }
 
-section[data-testid="stSidebar"] * {
-    color: white;
+/* =========================================================
+   Typography
+========================================================= */
+
+h1{
+
+    font-size:48px !important;
+
+    font-weight:800 !important;
+
 }
 
-/* Metric Cards */
-[data-testid="metric-container"] {
-    background: white;
-    border-radius: 14px;
-    padding: 18px;
-    border: 1px solid #E5E7EB;
-    box-shadow: 0px 3px 12px rgba(0,0,0,0.06);
+h2{
+
+    font-size:34px !important;
+
+    font-weight:700 !important;
+
 }
 
-/* Buttons */
-.stButton > button {
-    width: 100%;
-    border-radius: 10px;
-    height: 46px;
-    font-weight: 600;
-    border: none;
+h3{
+
+    font-size:28px !important;
+
+    font-weight:700 !important;
+
 }
 
-/* DataFrames */
-[data-testid="stDataFrame"] {
-    border-radius: 12px;
-    overflow: hidden;
+p{
+
+    font-size:18px !important;
+
+    line-height:1.7;
+
 }
 
-/* Tabs */
-button[data-baseweb="tab"] {
-    font-size: 16px;
-    font-weight: 600;
+/* =========================================================
+   Horizontal Divider
+========================================================= */
+
+hr{
+
+    margin-top:30px;
+
+    margin-bottom:30px;
+
 }
 
-/* Success Boxes */
-.stAlert {
-    border-radius: 10px;
+/* =========================================================
+   Navigation (st.radio)
+========================================================= */
+
+div[role="radiogroup"]{
+
+    display:flex;
+
+    justify-content:center;
+
+    gap:22px;
+
+    margin-top:25px;
+
+    margin-bottom:35px;
+
 }
 
-/* Expanders */
-.streamlit-expanderHeader {
-    font-weight: 600;
+/* Hide radio circle */
+
+div[role="radiogroup"] label > div:first-child{
+
+    display:none;
+
+}
+
+/* Navigation Card */
+
+div[role="radiogroup"] label{
+
+    background:var(--card-bg);
+
+    color:var(--card-text);
+
+    padding:22px 38px;
+
+    min-width:220px;
+
+    text-align:center;
+
+    border-radius:18px;
+
+    border:1px solid var(--border);
+
+    cursor:pointer;
+
+    font-size:20px;
+
+    font-weight:700;
+
+    transition:all .25s ease;
+
+}
+
+/* Hover */
+
+div[role="radiogroup"] label:hover{
+
+    transform:translateY(-3px);
+
+    border-color:var(--primary);
+
+    box-shadow:0 10px 25px rgba(37,99,235,.25);
+
+}
+
+/* Selected */
+
+div[role="radiogroup"] input:checked + div{
+
+    background:var(--primary);
+
+    color:white;
+
+}
+
+/* =========================================================
+   Buttons
+========================================================= */
+
+div.stButton > button{
+
+    width:100%;
+
+    height:62px;
+
+    border-radius:14px;
+
+    font-size:18px;
+
+    font-weight:700;
+
+    border:none;
+
+    transition:.25s;
+
+}
+
+div.stButton > button:hover{
+
+    transform:translateY(-2px);
+
+}
+
+/* =========================================================
+   Metrics
+========================================================= */
+
+div[data-testid="stMetric"]{
+
+    border:1px solid var(--border);
+
+    border-radius:16px;
+
+    padding:20px;
+
+    background:var(--card-bg);
+
+}
+
+/* =========================================================
+   Tables
+========================================================= */
+
+div[data-testid="stDataFrame"]{
+
+    border-radius:14px;
+
+    overflow:hidden;
+
+    border:1px solid var(--border);
+
+}
+
+/* =========================================================
+   Success
+========================================================= */
+
+div[data-testid="stAlert"]{
+
+    border-radius:14px;
+
+}
+
+
+/* =========================================================
+   UPLOAD BOX
+========================================================= */
+
+section[data-testid="stFileUploader"]{
+
+    border:2px dashed var(--primary);
+
+    border-radius:18px;
+
+    padding:25px;
+
+    background:var(--card-bg);
+
+    transition:.3s;
+
+}
+
+section[data-testid="stFileUploader"]:hover{
+
+    border-color:#3b82f6;
+
+    box-shadow:0 0 20px rgba(37,99,235,.20);
+
+}
+
+
+/* =========================================================
+   SIDEBAR
+========================================================= */
+
+section[data-testid="stSidebar"]{
+
+    border-right:1px solid var(--border);
+
+}
+
+section[data-testid="stSidebar"] h1,
+section[data-testid="stSidebar"] h2,
+section[data-testid="stSidebar"] h3{
+
+    color:var(--card-text);
+
+}
+
+section[data-testid="stSidebar"] p{
+
+    font-size:16px !important;
+
+}
+
+
+/* =========================================================
+   CONTAINERS
+========================================================= */
+
+div[data-testid="stVerticalBlock"] > div{
+
+    border-radius:16px;
+
+}
+
+
+/* =========================================================
+   INFO BOX
+========================================================= */
+
+div[data-testid="stAlert"]{
+
+    border-radius:16px;
+
+}
+
+
+/* =========================================================
+   EXPANDERS
+========================================================= */
+
+details{
+
+    border-radius:16px;
+
+    border:1px solid var(--border);
+
+    overflow:hidden;
+
+}
+
+
+/* =========================================================
+   REPORT PAGE
+========================================================= */
+
+.stCode{
+
+    border-radius:14px;
+
+}
+
+pre{
+
+    font-size:15px !important;
+
+}
+
+
+/* =========================================================
+   DOWNLOAD BUTTON
+========================================================= */
+
+button[kind="secondary"]{
+
+    border-radius:14px !important;
+
+}
+
+
+/* =========================================================
+   CHARTS
+========================================================= */
+
+.js-plotly-plot{
+
+    border-radius:18px;
+
+    overflow:hidden;
+
+    border:1px solid var(--border);
+
+}
+
+
+/* =========================================================
+   KPI Cards
+========================================================= */
+
+div[data-testid="stMetric"]{
+
+    box-shadow:0 6px 18px rgba(0,0,0,.08);
+
+}
+
+
+/* =========================================================
+   ANIMATION
+========================================================= */
+
+div.stButton > button{
+
+    transition:all .25s ease;
+
+}
+
+div.stButton > button:hover{
+
+    transform:translateY(-3px);
+
+}
+
+
+/* =========================================================
+   SCROLLBAR
+========================================================= */
+
+::-webkit-scrollbar{
+
+    width:10px;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:#2563eb;
+
+    border-radius:20px;
+
+}
+
+/* =========================================================
+   PREMIUM KPI CARDS
+========================================================= */
+
+div[data-testid="stMetric"]{
+
+    border-radius:18px;
+
+    padding:18px;
+
+    background:var(--card-bg);
+
+    border:1px solid var(--border);
+
+    transition:.3s;
+
+}
+
+div[data-testid="stMetric"]:hover{
+
+    transform:translateY(-4px);
+
+    box-shadow:0 8px 20px rgba(37,99,235,.20);
+
+}
+
+/* =========================================================
+   SIDEBAR
+========================================================= */
+
+section[data-testid="stSidebar"]{
+
+    width:340px !important;
+
+    border-right:1px solid var(--border);
+
+}
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+div.stButton > button{
+
+    width:100%;
+
+    height:65px;
+
+    font-size:18px;
+
+    font-weight:700;
+
+    border-radius:16px;
+
+    transition:all .25s ease;
+
+}
+
+div.stButton > button:hover{
+
+    transform:translateY(-3px);
+
 }

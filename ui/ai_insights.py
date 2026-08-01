@@ -8,14 +8,22 @@ def show_ai(df, dataset_info, semantic_info):
 
     st.header("🤖 AI Data Storyteller")
 
-    # Build the dataset summary ONCE
+    # =====================================================
+    # BUILD DATASET SUMMARY
+    # =====================================================
+
     summary = build_ai_summary(
         df,
         dataset_info,
         semantic_info
     )
 
-    # ---------------- AI REPORT ---------------- #
+    # Save summary for Report Page
+    st.session_state["dataset_summary"] = summary
+
+    # =====================================================
+    # AI REPORT
+    # =====================================================
 
     generate = st.button("✨ Generate AI Insights")
 
@@ -24,20 +32,30 @@ def show_ai(df, dataset_info, semantic_info):
         with st.spinner("Analyzing your dataset..."):
 
             story = generate_story(summary)
+
+        # Save AI Story for Report Page
+        if story:
+
             st.session_state["ai_story"] = story
 
-        st.success("✅ Analysis Complete")
+            st.success("✅ Analysis Complete")
 
-        st.markdown(story)
+            st.markdown(story)
 
-        st.download_button(
-            label="📥 Download AI Summary",
-            data=story,
-            file_name="AI_Summary.txt",
-            mime="text/plain"
-        )
+            st.download_button(
+                label="📥 Download AI Summary",
+                data=story,
+                file_name="AI_Summary.txt",
+                mime="text/plain"
+            )
 
-    # ---------------- DATASET CHAT ---------------- #
+        else:
+
+            st.error("Failed to generate AI insights.")
+
+    # =====================================================
+    # DATASET CHAT
+    # =====================================================
 
     st.markdown("---")
 
