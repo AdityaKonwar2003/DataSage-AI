@@ -204,9 +204,12 @@ def show_forecast(df, semantic_info):
         """
 🤖 **Forecast Model**
 
-This forecast is generated using a **Random Forest Regression** model trained on the historical dataset.
+This forecast is generated using the **Facebook Prophet** time-series forecasting model.
 
-The model analyzes historical patterns to estimate future values and provides an AI-generated business interpretation of the forecast.
+Prophet automatically identifies historical trends and seasonal patterns to predict future values. The forecast also includes a **95% confidence interval**, providing a realistic range of possible future outcomes.
+
+This model is widely used for business forecasting applications such as sales, demand, revenue, and KPI prediction.
+
 """
     )
 

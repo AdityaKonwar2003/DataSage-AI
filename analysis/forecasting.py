@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 from sklearn.ensemble import RandomForestRegressor
-
+from prophet import Prophet
 import plotly.graph_objects as go
 
 
@@ -62,69 +62,51 @@ def forecast_values(
     periods=30
 ):
     """
-    Forecast future values using Random Forest Regression.
+    Forecast using Facebook Prophet.
     """
 
-    df = forecast_df.copy()
-
-    df["Day_Number"] = (
-        df[date_column] - df[date_column].min()
-    ).dt.days
-
-    X = df[["Day_Number"]]
-    y = df[target_column]
-
-    # -----------------------------
-    # Random Forest Model
-    # -----------------------------
-
-    model = RandomForestRegressor(
-        n_estimators=300,
-        max_depth=10,
-        random_state=42
+    df = forecast_df.rename(
+        columns={
+            date_column: "ds",
+            target_column: "y"
+        }
     )
 
-    model.fit(X, y)
+    model = Prophet(
+    yearly_seasonality=True,
+    weekly_seasonality=True,
+    daily_seasonality=False,
+    changepoint_prior_scale=0.15,
+    interval_width=0.95
+)
 
-    # -----------------------------
-    # Future Days
-    # -----------------------------
+    model.fit(df)
 
-    last_day = df["Day_Number"].max()
-
-    future_days = np.arange(
-        last_day + 1,
-        last_day + periods + 1
+    future = model.make_future_dataframe(
+        periods=periods
     )
 
-    future_X = pd.DataFrame({
-        "Day_Number": future_days
-    })
+    forecast = model.predict(future)
 
-    future_predictions = model.predict(future_X)
+    forecast = forecast.tail(periods)
 
-    # -----------------------------
-    # Future Dates
-    # -----------------------------
+    forecast = forecast[
+        [
+            "ds",
+            "yhat",
+            "yhat_lower",
+            "yhat_upper"
+        ]
+    ]
 
-    frequency = pd.infer_freq(df[date_column])
-
-    if frequency is None:
-        frequency = "D"
-
-    future_dates = pd.date_range(
-        start=df[date_column].max(),
-        periods=periods + 1,
-        freq=frequency
-    )[1:]
-
-    forecast = pd.DataFrame({
-        date_column: future_dates,
-        "Prediction": future_predictions
-    })
+    forecast.columns = [
+        date_column,
+        "Prediction",
+        "Lower",
+        "Upper"
+    ]
 
     return forecast
-
 
 # =====================================================
 # FORECAST CHART
@@ -137,61 +119,135 @@ def create_forecast_chart(
     target_column
 ):
     """
-    Create an interactive forecast chart.
+    Professional Business Forecast Chart
     """
 
     fig = go.Figure()
 
-    # Historical
+    # =====================================================
+    # Historical Data
+    # =====================================================
 
     fig.add_trace(
         go.Scatter(
-            x=historical_df[date_column],
-            y=historical_df[target_column],
-            mode="lines+markers",
-            name="Historical",
-            line=dict(
-                color="royalblue",
-                width=3
-            )
+    x=historical_df[date_column],
+    y=historical_df[target_column],
+    mode="lines+markers",
+    name="Historical",
+    line=dict(
+        color="royalblue",
+        width=3
+    ),
+    marker=dict(size=5),
+
+    hovertemplate=
+        "<b>Date:</b> %{x}<br>"
+        "<b>Actual:</b> %{y:.2f}"
+        "<extra></extra>"
+)
+    )
+
+    # =====================================================
+    # Confidence Interval
+    # =====================================================
+
+    fig.add_trace(
+        go.Scatter(
+            x=pd.concat([
+                forecast_df[date_column],
+                forecast_df[date_column][::-1]
+            ]),
+            y=pd.concat([
+                forecast_df["Upper"],
+                forecast_df["Lower"][::-1]
+            ]),
+            fill="toself",
+            fillcolor="rgba(255,99,71,0.20)",
+            line=dict(color="rgba(255,255,255,0)"),
+            hoverinfo="skip",
+            showlegend=True,
+            name="Confidence Interval"
         )
     )
 
+    # =====================================================
     # Forecast
+    # =====================================================
 
     fig.add_trace(
         go.Scatter(
             x=forecast_df[date_column],
             y=forecast_df["Prediction"],
-            mode="lines+markers",
+            mode="lines",
             name="Forecast",
             line=dict(
-                color="tomato",
-                width=3,
-                dash="dash"
-            )
-        )
+        color="tomato",
+        width=4,
+        dash="dash"
+    ),
+
+    hovertemplate=
+        "<b>Date:</b> %{x}<br>"
+        "<b>Forecast:</b> %{y:.2f}"
+        "<extra></extra>"
+)
     )
+    # =====================================================
+    # Forecast Start Line
+    # =====================================================
+
+    forecast_start = forecast_df[date_column].iloc[0]
+    fig.add_vrect(
+    x0=forecast_start,
+    x1=forecast_df[date_column].iloc[-1],
+    fillcolor="rgba(255,165,0,0.08)",
+    layer="below",
+    line_width=0
+)
+    fig.add_vline(
+        x=forecast_start,
+        line_width=2,
+        line_dash="dot",
+        line_color="green",
+        annotation_text="Forecast Starts",
+        annotation_position="top"
+    )
+
+    # =====================================================
+    # Layout
+    # =====================================================
 
     fig.update_layout(
 
-        title=f"{target_column} Forecast",
+    title={
+        "text": f"📈 {target_column} Forecast using Prophet",
+        "x": 0.5,
+        "xanchor": "center"
+    },
 
-        template="plotly_white",
+    template="plotly_dark",
 
-        hovermode="x unified",
+    hovermode="x unified",
 
-        xaxis_title="Date",
+    dragmode="zoom",
 
-        yaxis_title=target_column,
+    xaxis=dict(
+        title="Date",
+        rangeslider=dict(
+            visible=True
+        )
+    ),
 
-        legend=dict(
-            orientation="h",
-            y=1.08,
-            x=0.75
-        ),
+    yaxis_title=target_column,
 
-        height=600
-    )
+    legend=dict(
+        orientation="h",
+        y=1.10,
+        x=0.5,
+        xanchor="center"
+    ),
 
+    height=650
+)
     return fig
+    
