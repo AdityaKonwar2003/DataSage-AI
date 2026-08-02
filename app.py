@@ -131,18 +131,25 @@ st.markdown("<br>", unsafe_allow_html=True)
 # NAVIGATION
 # =====================================================
 
-page = st.radio(
-      "Navigation",
-    [
-        "📂 Upload",
-        "📊 Analytics",
-        "🤖 AI Insights",
-        "🔮 Forecast",
-        "📄 Report"
-    ],
-    horizontal=True,
-    label_visibility="collapsed"
+# =====================================================
+# NAVIGATION
+# =====================================================
 
+pages = [
+    "📂 Upload",
+    "📊 Analytics",
+    "🤖 AI Insights",
+    "🔮 Forecast",
+    "📄 Report"
+]
+
+
+page = st.radio(
+    "Navigation",
+    pages,
+    horizontal=True,
+    label_visibility="collapsed",
+    key="navigation_radio"
 )
 
 st.markdown("---")
@@ -175,19 +182,22 @@ Supported formats
 
     if "df" in st.session_state:
 
-        st.success("✅ Dataset already loaded.")
+        st.success("✅ Dataset loaded successfully and ready for analysis!")
 
         st.info(
-f"""
-Rows: **{st.session_state['row_count']}**
+            f"""
+**Dataset Summary**
 
-Columns: **{st.session_state['column_count']}**
+📄 Rows: **{st.session_state['row_count']}**
 
-Missing Values: **{st.session_state['missing_count']}**
+📊 Columns: **{st.session_state['column_count']}**
 
-Duplicate Rows: **{st.session_state['duplicate_count']}**
-"""
-        )
+❌ Missing Values: **{st.session_state['missing_count']}**
+
+🧹 Duplicate Rows: **{st.session_state['duplicate_count']}**
+
+➡️ Select **📊 Analytics** above to explore your dataset.
+""")
 
         if st.button("🔄 Upload New Dataset"):
 
@@ -245,7 +255,20 @@ Duplicate Rows: **{st.session_state['duplicate_count']}**
             st.session_state["duplicate_count"] = int(df.duplicated().sum())
 
             st.success("✅ Dataset uploaded successfully!")
+            st.markdown("""
+### 🚀 What's Next?
 
+Your dataset is ready for analysis.
+
+- 📊 **Analytics** → Explore visualizations and statistics
+- 🤖 **AI Insights** → Generate business insights
+- 🔮 **Forecast** → Predict future trends
+- 📄 **Report** → Download a professional PDF report
+
+👆 Select a section from the navigation bar above to continue.
+""")
+            
+          
     
         # =====================================================
 # CHECK DATASET
