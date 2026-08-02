@@ -83,11 +83,26 @@ def show_forecast(df, semantic_info):
 
     st.subheader("📅 Forecast Settings")
 
-    forecast_days = st.selectbox(
-        "Forecast Period",
-        [7, 30, 90],
-        index=1
-    )
+    forecast_option = st.selectbox(
+    "Forecast Period",
+    [
+        "1 Month",
+        "3 Months",
+        "6 Months",
+        "1 Year"
+    ],
+    index=1
+)
+
+    forecast_map = {
+    "1 Month": 30,
+    "3 Months": 90,
+    "6 Months": 180,
+    "1 Year": 365
+}
+
+    forecast_days = forecast_map[forecast_option]
+    st.session_state["forecast_period_label"] = forecast_option
 
     # =====================================================
     # GENERATE FORECAST
@@ -167,7 +182,10 @@ def show_forecast(df, semantic_info):
     with c1:
         st.metric(
             "📅 Forecast Period",
+             st.session_state.get(
+            "forecast_period_label",
             f"{forecast_days} Days"
+        )
         )
 
     with c2:
