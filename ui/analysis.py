@@ -94,18 +94,38 @@ def show_analysis(df, dataset_info, semantic_info):
                 chart_path
             )
 
-    # Save paths for PDF Report
-    st.session_state["report_charts"] = chart_paths
+   
+    # =================================================
+# SAVE CHARTS + INSIGHTS FOR PDF
+# =================================================
+
+    report_items = []
+
+    for i, chart in enumerate(charts, start=1):
+        recommendation = recommendations[i - 1]
+
+        chart_path = f"report/charts/chart_{i}.png"
+
+        if os.path.exists(chart_path):
+            insight = get_chart_insight(
+            recommendation,
+            df
+        )
+
+        report_items.append({
+            "path": chart_path,
+            "title": recommendation["title"],
+            "insight": insight
+        })
+
+    st.session_state["report_items"] = report_items
 
     # =====================================================
     # CHARTS
     # =====================================================
 
-    for recommendation, chart in zip(
-        recommendations,
-        charts
-    ):
-
+    for i, chart in enumerate(charts, start=1):
+        recommendation = recommendations[i - 1]
         st.markdown("---")
 
         st.subheader(
@@ -122,12 +142,12 @@ def show_analysis(df, dataset_info, semantic_info):
         # CHART INSIGHT
         # =================================================
 
-        st.success(
-            get_chart_insight(
-                recommendation,
-                df
-            )
-        )
+        chart_insight = get_chart_insight(
+    recommendation,
+    df
+)
+
+        st.success(chart_insight)
 
         # =================================================
         # AI EXPLANATION
@@ -154,6 +174,31 @@ def show_analysis(df, dataset_info, semantic_info):
             st.info(
                 explanation
             )
+            # =================================================
+# SAVE CHART INFORMATION FOR PDF
+# =================================================
+
+    report_items = []
+
+    for i, recommendation in enumerate(
+    recommendations[:len(charts)],
+    start=1
+):
+        chart_path = f"report/charts/chart_{i}.png"
+
+        if os.path.exists(chart_path):
+            insight = get_chart_insight(
+            recommendation,
+            df
+        )
+
+            report_items.append({
+            "path": chart_path,
+            "title": recommendation["title"],
+            "insight": insight
+        })
+
+    st.session_state["report_items"] = report_items
 
     # =====================================================
     # CORRELATION ANALYSIS

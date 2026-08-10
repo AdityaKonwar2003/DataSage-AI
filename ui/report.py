@@ -4,6 +4,10 @@ import streamlit as st
 from report.pdf_generator import generate_pdf
 
 
+# =====================================================
+# FORMAT AI STORY
+# =====================================================
+
 def format_ai_story(text):
     """
     Convert AI markdown into clean bullet points.
@@ -44,15 +48,21 @@ def format_ai_story(text):
     return "\n".join(lines)
 
 
+# =====================================================
+# SHOW REPORT
+# =====================================================
+
 def show_report():
 
     st.header("📄 Professional Report Dashboard")
 
     st.caption(
-        "Generate a professional business report with AI-powered insights and forecasting."
+        "Generate a professional business report with AI-powered "
+        "insights and forecasting."
     )
 
     st.markdown("---")
+
 
     # =====================================================
     # LOAD SESSION DATA
@@ -73,20 +83,29 @@ def show_report():
         "Generate Forecast first."
     )
 
+
     # =====================================================
     # LOAD GENERATED CHARTS
     # =====================================================
 
-    chart_paths = st.session_state.get(
-        "report_charts",
+    report_items = st.session_state.get(
+        "report_items",
         []
     )
+
+    chart_paths = [
+        item["path"]
+        for item in report_items
+        if "path" in item
+    ]
+
 
     # =====================================================
     # PAGE LAYOUT
     # =====================================================
 
     menu, content = st.columns([1, 4])
+
 
     # =====================================================
     # LEFT MENU
@@ -100,34 +119,36 @@ def show_report():
 
         st.button(
             "✨ Executive Summary",
-            use_container_width=True
+            width="stretch"
         )
 
         st.button(
             "📊 Dataset Summary",
-            use_container_width=True
+            width="stretch"
         )
 
         st.button(
             "📈 Forecast",
-            use_container_width=True
+            width="stretch"
         )
 
         st.button(
             "📊 Visual Analytics",
-            use_container_width=True
+            width="stretch"
         )
 
         st.button(
             "📄 Download PDF",
-            use_container_width=True
+            width="stretch"
         )
+
 
     # =====================================================
     # RIGHT CONTENT
     # =====================================================
 
     with content:
+
 
         # =================================================
         # DASHBOARD OVERVIEW
@@ -165,7 +186,9 @@ def show_report():
                 f"{st.session_state.get('duplicate_count', '--')}"
             )
 
+
         st.markdown("---")
+
 
         # =================================================
         # AI EXECUTIVE SUMMARY
@@ -174,14 +197,17 @@ def show_report():
         st.subheader("✨ AI Executive Summary")
 
         st.info(
-            "Automatically generated business insights from your uploaded dataset."
+            "Automatically generated business insights from your "
+            "uploaded dataset."
         )
 
         st.markdown(
             format_ai_story(ai_story)
         )
 
+
         st.markdown("---")
+
 
         # =================================================
         # DATASET SUMMARY
@@ -191,7 +217,9 @@ def show_report():
 
         st.code(summary)
 
+
         st.markdown("---")
+
 
         # =================================================
         # VISUAL ANALYTICS
@@ -199,24 +227,47 @@ def show_report():
 
         st.subheader("📈 Visual Analytics")
 
-        if chart_paths:
+        if report_items:
 
             st.success(
-                f"✅ {len(chart_paths)} visualization(s) included in the report."
+                f"✅ {len(report_items)} visualization(s) "
+                "included in the report."
             )
 
-            for chart_path in chart_paths:
+            for item in report_items:
 
-                try:
+                chart_path = item.get("path")
+                chart_title = item.get(
+                    "title",
+                    "Visualization"
+                )
+                chart_insight = item.get(
+                    "insight",
+                    ""
+                )
 
-                    st.image(
-                        chart_path,
-                        use_container_width=True
+                st.markdown(
+                    f"### 📊 {chart_title}"
+                )
+
+                if chart_path:
+
+                    try:
+
+                        st.image(
+                            chart_path,
+                            width="stretch"
+                        )
+
+                    except Exception:
+
+                        pass
+
+                if chart_insight:
+
+                    st.success(
+                        f"💡 {chart_insight}"
                     )
-
-                except Exception:
-
-                    pass
 
         else:
 
@@ -224,7 +275,9 @@ def show_report():
                 "No visualization charts are currently available."
             )
 
+
         st.markdown("---")
+
 
         # =================================================
         # FORECAST
@@ -236,7 +289,9 @@ def show_report():
             forecast_text
         )
 
+
         st.markdown("---")
+
 
         # =================================================
         # PDF
@@ -246,16 +301,16 @@ def show_report():
 
         if st.button(
             "⬇ Generate & Download PDF",
-            use_container_width=True
+            width="stretch"
         ):
 
             with st.spinner(
                 "Generating professional report..."
             ):
 
-                # Make sure latest chart paths are used
-                chart_paths = st.session_state.get(
-                    "report_charts",
+                # Get latest report items
+                report_items = st.session_state.get(
+                    "report_items",
                     []
                 )
 
@@ -263,8 +318,9 @@ def show_report():
                     summary,
                     ai_story,
                     forecast_text,
-                    chart_paths
+                    report_items
                 )
+
 
             with open(pdf, "rb") as file:
 
@@ -273,10 +329,11 @@ def show_report():
                     data=file,
                     file_name=pdf,
                     mime="application/pdf",
-                    use_container_width=True
+                    width="stretch"
                 )
 
+
             st.success(
-                "✅ Report generated successfully with analytics charts!"
+                "✅ Report generated successfully "
+                "with analytics charts and insights!"
             )
-            

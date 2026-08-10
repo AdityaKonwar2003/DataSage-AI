@@ -1,14 +1,13 @@
-
 import re
+import glob
 
-
-from reportlab.platypus import Image
 from datetime import datetime
 
 from reportlab.platypus import (
     SimpleDocTemplate,
     Paragraph,
-    Spacer
+    Spacer,
+    Image
 )
 
 from reportlab.lib.styles import getSampleStyleSheet
@@ -60,7 +59,12 @@ def format_ai_story(ai_story):
 # GENERATE PDF
 # =====================================================
 
-def generate_pdf(summary, ai_story, forecast_text):
+def generate_pdf(
+    summary,
+    ai_story,
+    forecast_text,
+    report_items
+):
 
     filename = "DataSage_AI_Report.pdf"
 
@@ -69,6 +73,7 @@ def generate_pdf(summary, ai_story, forecast_text):
     styles = getSampleStyleSheet()
 
     story = []
+
 
     # =====================================================
     # TITLE
@@ -92,12 +97,14 @@ def generate_pdf(summary, ai_story, forecast_text):
 
     story.append(
         Paragraph(
-            f"<b>Generated On:</b> {datetime.now().strftime('%d %B %Y')}",
+            f"<b>Generated On:</b> "
+            f"{datetime.now().strftime('%d %B %Y')}",
             styles["BodyText"]
         )
     )
 
     story.append(Spacer(1, 25))
+
 
     # =====================================================
     # DATASET OVERVIEW
@@ -121,14 +128,120 @@ def generate_pdf(summary, ai_story, forecast_text):
 
     story.append(Spacer(1, 20))
 
-  
+
+    # =====================================================
+    # VISUAL ANALYTICS
+    # =====================================================
+
+    story.append(
+        Paragraph(
+            "<b>2. Visual Analytics</b>",
+            styles["Heading2"]
+        )
+    )
+
+    story.append(Spacer(1, 10))
+
+
+    if report_items:
+
+        for item in report_items:
+
+            chart_path = item["path"]
+            chart_title = item["title"]
+            chart_insight = item["insight"]
+
+            # ---------------------------------------------
+            # Chart Title
+            # ---------------------------------------------
+
+            story.append(
+                Paragraph(
+                    f"<b>📊 {chart_title}</b>",
+                    styles["Heading3"]
+                )
+            )
+
+            story.append(
+                Spacer(1, 6)
+            )
+
+            # ---------------------------------------------
+            # Chart
+            # ---------------------------------------------
+
+            try:
+
+                img = Image(
+                    chart_path,
+                    width=450,
+                    height=260
+                )
+
+                story.append(img)
+
+                story.append(
+                    Spacer(1, 8)
+                )
+
+            except Exception as e:
+
+                print(
+                    f"Could not add chart {chart_path}: {e}"
+                )
+
+            # ---------------------------------------------
+            # Chart Insight
+            # ---------------------------------------------
+            # Clean Markdown formatting
+            clean_insight = chart_insight.replace("**", "")
+
+# Remove existing square bullet
+            clean_insight = clean_insight.replace("■", "").strip()
+
+# Split insight into sentences
+            sentences = [
+    sentence.strip()
+    for sentence in clean_insight.split(".")
+    if sentence.strip()
+]
+
+            story.append(
+    Paragraph(
+        "💡 <b>KEY INSIGHT</b>",
+        styles["Heading4"]
+    )
+)
+
+            story.append(
+    Spacer(1, 5)
+)
+
+# Create clean bullet points
+            for sentence in sentences:
+                story.append(
+        Paragraph(
+            f"• {sentence}.",
+            styles["BodyText"]
+        )
+    )
+
+            story.append(
+        Spacer(1, 3)
+    )
+
+            story.append(
+    Spacer(1, 20)
+)
+
+
     # =====================================================
     # AI EXECUTIVE SUMMARY
     # =====================================================
 
     story.append(
         Paragraph(
-            "<b>2. AI Executive Summary</b>",
+            "<b>3. AI Executive Summary</b>",
             styles["Heading2"]
         )
     )
@@ -144,13 +257,14 @@ def generate_pdf(summary, ai_story, forecast_text):
 
     story.append(Spacer(1, 20))
 
+
     # =====================================================
     # FORECAST ANALYSIS
     # =====================================================
 
     story.append(
         Paragraph(
-            "<b>3. Forecast Analysis</b>",
+            "<b>4. Forecast Analysis</b>",
             styles["Heading2"]
         )
     )
@@ -166,13 +280,14 @@ def generate_pdf(summary, ai_story, forecast_text):
 
     story.append(Spacer(1, 25))
 
+
     # =====================================================
     # CONCLUSION
     # =====================================================
 
     story.append(
         Paragraph(
-            "<b>4. Conclusion</b>",
+            "<b>5. Conclusion</b>",
             styles["Heading2"]
         )
     )
@@ -191,16 +306,23 @@ def generate_pdf(summary, ai_story, forecast_text):
 
     story.append(Spacer(1, 20))
 
+
     # =====================================================
     # FOOTER
     # =====================================================
 
     story.append(
         Paragraph(
-            "<i>© 2026 DataSage AI | AI-Powered Business Intelligence Platform</i>",
+            "<i>© 2026 DataSage AI | "
+            "AI-Powered Business Intelligence Platform</i>",
             styles["Italic"]
         )
     )
+
+
+    # =====================================================
+    # BUILD PDF
+    # =====================================================
 
     doc.build(story)
 
