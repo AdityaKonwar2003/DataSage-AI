@@ -63,14 +63,6 @@ def show_analysis(df, dataset_info, semantic_info):
         recommendations
     )
 
-    # =====================================================
-    # Create folder for report charts
-    # =====================================================
-
-    os.makedirs("report/charts", exist_ok=True)
-
-    chart_paths = []
-
     if not charts:
 
         st.warning(
@@ -80,10 +72,39 @@ def show_analysis(df, dataset_info, semantic_info):
         return
 
     # =====================================================
+    # GET GENERATED PDF CHART PATHS
+    # =====================================================
+
+    os.makedirs(
+        "report/charts",
+        exist_ok=True
+    )
+
+    chart_paths = []
+
+    for i in range(1, len(charts) + 1):
+
+        chart_path = (
+            f"report/charts/chart_{i}.png"
+        )
+
+        if os.path.exists(chart_path):
+
+            chart_paths.append(
+                chart_path
+            )
+
+    # Save paths for PDF Report
+    st.session_state["report_charts"] = chart_paths
+
+    # =====================================================
     # CHARTS
     # =====================================================
 
-    for recommendation, chart in zip(recommendations, charts):
+    for recommendation, chart in zip(
+        recommendations,
+        charts
+    ):
 
         st.markdown("---")
 
@@ -91,32 +112,15 @@ def show_analysis(df, dataset_info, semantic_info):
             f"📊 {recommendation['title']}"
         )
 
+        # Interactive Plotly chart
         st.plotly_chart(
             chart,
             width="stretch"
         )
 
-        # ------------------------------------------
-        # Save chart for PDF
-        # ------------------------------------------
-
-        chart_path = (
-            f"report/charts/chart_{len(chart_paths)+1}.png"
-        )
-
-        try:
-
-            chart.write_image(
-                chart_path,
-                width=1200,
-                height=700
-            )
-
-            chart_paths.append(chart_path)
-
-        except Exception as e:
-
-            pass
+        # =================================================
+        # CHART INSIGHT
+        # =================================================
 
         st.success(
             get_chart_insight(
@@ -124,6 +128,10 @@ def show_analysis(df, dataset_info, semantic_info):
                 df
             )
         )
+
+        # =================================================
+        # AI EXPLANATION
+        # =================================================
 
         if st.button(
             f"🤖 Explain {recommendation['title']}",
@@ -143,13 +151,9 @@ def show_analysis(df, dataset_info, semantic_info):
                     context
                 )
 
-            st.info(explanation)
-
-    # =====================================================
-    # Save chart paths for PDF
-    # =====================================================
-
-    st.session_state["report_charts"] = chart_paths
+            st.info(
+                explanation
+            )
 
     # =====================================================
     # CORRELATION ANALYSIS
@@ -176,6 +180,10 @@ def show_analysis(df, dataset_info, semantic_info):
     positive = correlation_data["positive"]
     negative = correlation_data["negative"]
 
+    # =====================================================
+    # POSITIVE CORRELATION
+    # =====================================================
+
     if positive:
 
         st.success(
@@ -190,6 +198,10 @@ Correlation: **{positive['Correlation']}**
 """
         )
 
+    # =====================================================
+    # NEGATIVE CORRELATION
+    # =====================================================
+
     if negative:
 
         st.warning(
@@ -203,6 +215,10 @@ Correlation: **{negative['Correlation']}**
 💡 As one variable increases, the other tends to decrease.
 """
         )
+
+    # =====================================================
+    # COMPLETE CORRELATION MATRIX
+    # =====================================================
 
     with st.expander(
         "📋 View Complete Correlation Matrix"

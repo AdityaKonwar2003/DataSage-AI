@@ -30,9 +30,16 @@ def format_ai_story(text):
         line = line.replace("**", "")
 
         if line in icons:
-            lines.append(f"\n### {icons[line]} {line}\n")
+
+            lines.append(
+                f"\n### {icons[line]} {line}\n"
+            )
+
         else:
-            lines.append(f"• {line}")
+
+            lines.append(
+                f"• {line}"
+            )
 
     return "\n".join(lines)
 
@@ -67,6 +74,15 @@ def show_report():
     )
 
     # =====================================================
+    # LOAD GENERATED CHARTS
+    # =====================================================
+
+    chart_paths = st.session_state.get(
+        "report_charts",
+        []
+    )
+
+    # =====================================================
     # PAGE LAYOUT
     # =====================================================
 
@@ -98,6 +114,11 @@ def show_report():
         )
 
         st.button(
+            "📊 Visual Analytics",
+            use_container_width=True
+        )
+
+        st.button(
             "📄 Download PDF",
             use_container_width=True
         )
@@ -107,34 +128,48 @@ def show_report():
     # =====================================================
 
     with content:
+
+        # =================================================
+        # DASHBOARD OVERVIEW
+        # =================================================
+
         st.subheader("📊 Dashboard Overview")
+
         k1, k2, k3, k4 = st.columns(4)
 
         with k1:
+
             st.metric(
-        "Rows",
-        f"{st.session_state.get('row_count', '--')}"
-    )
+                "Rows",
+                f"{st.session_state.get('row_count', '--')}"
+            )
 
         with k2:
+
             st.metric(
-        "Columns",
-        f"{st.session_state.get('column_count', '--')}"
-    )
+                "Columns",
+                f"{st.session_state.get('column_count', '--')}"
+            )
 
         with k3:
+
             st.metric(
-        "Missing Values",
-        f"{st.session_state.get('missing_count', '--')}"
-    )
+                "Missing Values",
+                f"{st.session_state.get('missing_count', '--')}"
+            )
 
         with k4:
+
             st.metric(
-        "Duplicates",
-        f"{st.session_state.get('duplicate_count', '--')}"
-    )
+                "Duplicates",
+                f"{st.session_state.get('duplicate_count', '--')}"
+            )
 
         st.markdown("---")
+
+        # =================================================
+        # AI EXECUTIVE SUMMARY
+        # =================================================
 
         st.subheader("✨ AI Executive Summary")
 
@@ -143,26 +178,14 @@ def show_report():
         )
 
         st.markdown(
-            f"""
-<div style="
-background:#111827;
-padding:20px;
-border-radius:12px;
-border:1px solid #374151;
-line-height:1.8;
-font-size:16px;
-">
-
-{format_ai_story(ai_story)}
-
-</div>
-""",
-            unsafe_allow_html=True,
+            format_ai_story(ai_story)
         )
 
         st.markdown("---")
 
-        # ---------------- DATASET SUMMARY ---------------- #
+        # =================================================
+        # DATASET SUMMARY
+        # =================================================
 
         st.subheader("📊 Dataset Summary")
 
@@ -170,15 +193,54 @@ font-size:16px;
 
         st.markdown("---")
 
-        # ---------------- FORECAST ---------------- #
+        # =================================================
+        # VISUAL ANALYTICS
+        # =================================================
 
-        st.subheader("🔮 Forecast Analysis")
+        st.subheader("📈 Visual Analytics")
 
-        st.info(forecast_text)
+        if chart_paths:
+
+            st.success(
+                f"✅ {len(chart_paths)} visualization(s) included in the report."
+            )
+
+            for chart_path in chart_paths:
+
+                try:
+
+                    st.image(
+                        chart_path,
+                        use_container_width=True
+                    )
+
+                except Exception:
+
+                    pass
+
+        else:
+
+            st.info(
+                "No visualization charts are currently available."
+            )
 
         st.markdown("---")
 
-        # ---------------- PDF ---------------- #
+        # =================================================
+        # FORECAST
+        # =================================================
+
+        st.subheader("🔮 Forecast Analysis")
+
+        st.info(
+            forecast_text
+        )
+
+        st.markdown("---")
+
+        # =================================================
+        # PDF
+        # =================================================
 
         st.subheader("📄 Professional Report")
 
@@ -191,11 +253,17 @@ font-size:16px;
                 "Generating professional report..."
             ):
 
-                chart_paths = st.session_state.get("report_charts", [])
+                # Make sure latest chart paths are used
+                chart_paths = st.session_state.get(
+                    "report_charts",
+                    []
+                )
+
                 pdf = generate_pdf(
                     summary,
                     ai_story,
-                    forecast_text
+                    forecast_text,
+                    chart_paths
                 )
 
             with open(pdf, "rb") as file:
@@ -209,5 +277,6 @@ font-size:16px;
                 )
 
             st.success(
-                "✅ Report generated successfully!"
+                "✅ Report generated successfully with analytics charts!"
             )
+            
