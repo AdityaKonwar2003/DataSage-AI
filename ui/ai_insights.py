@@ -1,6 +1,6 @@
 import streamlit as st
 
-from analysis.statistics import build_ai_summary
+
 from llm.storyteller import generate_story, ask_dataset
 
 
@@ -12,14 +12,13 @@ def show_ai(df, dataset_info, semantic_info):
     # BUILD DATASET SUMMARY
     # =====================================================
 
-    summary = build_ai_summary(
-        df,
-        dataset_info,
-        semantic_info
+     # Use cached dataset summary
+    summary = st.session_state.get(
+        "dataset_summary",
+        ""
     )
 
-    # Save summary for Report Page
-    st.session_state["dataset_summary"] = summary
+    
 
     # =====================================================
     # AI REPORT

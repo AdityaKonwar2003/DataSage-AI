@@ -21,7 +21,24 @@ from ui.ai_insights import show_ai
 from ui.forecast import show_forecast
 from ui.report import show_report
 
+@st.cache_data
+def process_dataset(df):
 
+    df, cleaning_report = clean_data(df)
+
+    dataset_info = detect_dataset(df)
+
+    semantic_info = detect_semantics(df)
+
+    return df, cleaning_report, dataset_info, semantic_info
+
+@st.cache_data
+def create_dataset_summary(df, dataset_info, semantic_info):
+    return build_ai_summary(
+        df,
+        dataset_info,
+        semantic_info
+    )
 # ---------------- PAGE CONFIG ---------------- #
 
 st.set_page_config(
@@ -131,10 +148,6 @@ st.markdown("<br>", unsafe_allow_html=True)
 # NAVIGATION
 # =====================================================
 
-# =====================================================
-# NAVIGATION
-# =====================================================
-
 pages = [
     "📂 Upload",
     "📊 Analytics",
@@ -143,6 +156,17 @@ pages = [
     "📄 Report"
 ]
 
+# Initialize navigation
+if "navigation_radio" not in st.session_state:
+    st.session_state["navigation_radio"] = "📂 Upload"
+
+# If a dataset was just uploaded,
+# automatically switch to Analytics
+if st.session_state.get("go_to_analytics", False):
+
+    st.session_state["navigation_radio"] = "📊 Analytics"
+
+    st.session_state["go_to_analytics"] = False
 
 page = st.radio(
     "Navigation",
@@ -153,6 +177,7 @@ page = st.radio(
 )
 
 st.markdown("---")
+
 
 # ---------------- MAIN APP ---------------- #
 
@@ -232,18 +257,14 @@ Supported formats
 
             df = load_data(uploaded_file)
 
-            df, cleaning_report = clean_data(df)
-
-            dataset_info = detect_dataset(df)
-
-            semantic_info = detect_semantics(df)
+            df, cleaning_report, dataset_info, semantic_info = process_dataset(df)
 
             st.session_state["df"] = df
             st.session_state["cleaning_report"] = cleaning_report
             st.session_state["dataset_info"] = dataset_info
             st.session_state["semantic_info"] = semantic_info
 
-            st.session_state["dataset_summary"] = build_ai_summary(
+            st.session_state["dataset_summary"] = create_dataset_summary(
                 df,
                 dataset_info,
                 semantic_info
@@ -254,7 +275,11 @@ Supported formats
             st.session_state["missing_count"] = int(df.isna().sum().sum())
             st.session_state["duplicate_count"] = int(df.duplicated().sum())
 
+
             st.success("✅ Dataset uploaded successfully!")
+            st.session_state["go_to_analytics"] = True
+            st.rerun()
+
             st.markdown("""
 ### 🚀 What's Next?
 
@@ -266,7 +291,7 @@ Your dataset is ready for analysis.
 - 📄 **Report** → Download a professional PDF report
 
 👆 Select a section from the navigation bar above to continue.
-""")
+""")          
             
           
     

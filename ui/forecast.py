@@ -2,14 +2,13 @@ import streamlit as st
 
 from llm.storyteller import explain_forecast
 
-from analysis.forecasting import (
+
+def show_forecast(df, semantic_info):
+    from analysis.forecasting import (
     prepare_forecast_data,
     forecast_values,
     create_forecast_chart
 )
-
-def show_forecast(df, semantic_info):
-
     # =====================================================
     # HEADER
     # =====================================================
