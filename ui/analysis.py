@@ -1,4 +1,3 @@
-import os
 import streamlit as st
 
 from analysis.statistics import get_descriptive_statistics
@@ -72,45 +71,27 @@ def show_analysis(df, dataset_info, semantic_info):
         return
 
     # =====================================================
-    # GET GENERATED PDF CHART PATHS
+    # PREPARE PDF CHART INFORMATION
     # =====================================================
-
-    os.makedirs(
-        "report/charts",
-        exist_ok=True
-    )
-
-    chart_paths = []
-
-    for i in range(1, len(charts) + 1):
-
-        chart_path = (
-            f"report/charts/chart_{i}.png"
-        )
-
-        if os.path.exists(chart_path):
-
-            chart_paths.append(
-                chart_path
-            )
-
-   
-    # =================================================
-# SAVE CHARTS + INSIGHTS FOR PDF
-# =================================================
 
     report_items = []
 
     for i, chart in enumerate(charts, start=1):
+
         recommendation = recommendations[i - 1]
 
         chart_path = f"report/charts/chart_{i}.png"
 
-        if os.path.exists(chart_path):
+        try:
+
             insight = get_chart_insight(
-            recommendation,
-            df
-        )
+                recommendation,
+                df
+            )
+
+        except Exception:
+
+            insight = "Insight could not be generated."
 
         report_items.append({
             "path": chart_path,
@@ -121,11 +102,13 @@ def show_analysis(df, dataset_info, semantic_info):
     st.session_state["report_items"] = report_items
 
     # =====================================================
-    # CHARTS
+    # DISPLAY CHARTS
     # =====================================================
 
     for i, chart in enumerate(charts, start=1):
+
         recommendation = recommendations[i - 1]
+
         st.markdown("---")
 
         st.subheader(
@@ -142,12 +125,11 @@ def show_analysis(df, dataset_info, semantic_info):
         # CHART INSIGHT
         # =================================================
 
-        chart_insight = get_chart_insight(
-    recommendation,
-    df
-)
+        chart_insight = report_items[i - 1]["insight"]
 
-        st.success(chart_insight)
+        st.success(
+            chart_insight
+        )
 
         # =================================================
         # AI EXPLANATION
@@ -155,7 +137,7 @@ def show_analysis(df, dataset_info, semantic_info):
 
         if st.button(
             f"🤖 Explain {recommendation['title']}",
-            key=f"ai_{recommendation['title']}"
+            key=f"ai_{i}"
         ):
 
             context = build_chart_context(
@@ -174,31 +156,6 @@ def show_analysis(df, dataset_info, semantic_info):
             st.info(
                 explanation
             )
-            # =================================================
-# SAVE CHART INFORMATION FOR PDF
-# =================================================
-
-    report_items = []
-
-    for i, recommendation in enumerate(
-    recommendations[:len(charts)],
-    start=1
-):
-        chart_path = f"report/charts/chart_{i}.png"
-
-        if os.path.exists(chart_path):
-            insight = get_chart_insight(
-            recommendation,
-            df
-        )
-
-            report_items.append({
-            "path": chart_path,
-            "title": recommendation["title"],
-            "insight": insight
-        })
-
-    st.session_state["report_items"] = report_items
 
     # =====================================================
     # CORRELATION ANALYSIS
