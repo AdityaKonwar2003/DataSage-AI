@@ -15,11 +15,10 @@ from analysis.statistics import (
     build_ai_summary
 )
 
-from ui.overview import show_overview
-from ui.analysis import show_analysis
-from ui.ai_insights import show_ai
-from ui.forecast import show_forecast
-from ui.report import show_report
+
+##from ui.ai_insights import show_ai
+##from ui.forecast import show_forecast
+##from ui.report import show_report
 
 @st.cache_data
 def process_dataset(df):
@@ -299,6 +298,10 @@ Your dataset is ready for analysis.
 # CHECK DATASET
 # =====================================================
 
+# =====================================================
+# CHECK DATASET
+# =====================================================
+
 if "df" in st.session_state:
 
     df = st.session_state["df"]
@@ -309,7 +312,15 @@ if "df" in st.session_state:
 
     semantic_info = st.session_state["semantic_info"]
 
+
+    # =================================================
+    # ANALYTICS
+    # =================================================
+
     if page == "📊 Analytics":
+
+        from ui.overview import show_overview
+        from ui.analysis import show_analysis
 
         show_overview(
             df,
@@ -325,7 +336,14 @@ if "df" in st.session_state:
             semantic_info
         )
 
+
+    # =================================================
+    # AI INSIGHTS
+    # =================================================
+
     elif page == "🤖 AI Insights":
+
+        from ui.ai_insights import show_ai
 
         show_ai(
             df,
@@ -333,16 +351,31 @@ if "df" in st.session_state:
             semantic_info
         )
 
+
+    # =================================================
+    # FORECAST
+    # =================================================
+
     elif page == "🔮 Forecast":
+
+        from ui.forecast import show_forecast
 
         show_forecast(
             df,
             semantic_info
         )
 
+
+    # =================================================
+    # REPORT
+    # =================================================
+
     elif page == "📄 Report":
 
+        from ui.report import show_report
+
         show_report()
+
 
 else:
 

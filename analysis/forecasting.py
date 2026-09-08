@@ -1,7 +1,6 @@
 import pandas as pd
-import numpy as np
 
-from sklearn.ensemble import RandomForestRegressor
+
 from prophet import Prophet
 import plotly.graph_objects as go
 
