@@ -68,6 +68,9 @@ with st.sidebar:
 
     st.title("📊 DataSage AI")
     st.image("assets/streamlit-logo.png", width=80)
+    st.markdown("""
+...
+""")
     st.caption("AI-Powered Business Intelligence Platform")
 
     st.markdown("---")
