@@ -148,26 +148,7 @@ def generate_charts(df, recommendations):
             # CREATE STATIC PNG FOR PDF
             # =====================================================
 
-            chart_index = len(figures) + 1
-
-            chart_path = (
-                f"report/charts/chart_{chart_index}.png"
-            )
-
-            try:
-
-                create_static_chart(
-                    df,
-                    chart,
-                    chart_type,
-                    chart_path
-                )
-
-            except Exception as e:
-
-                print(
-                    f"Static chart creation failed: {e}"
-                )
+            
 
             # =====================================================
             # KEEP PLOTLY FIGURE FOR STREAMLIT

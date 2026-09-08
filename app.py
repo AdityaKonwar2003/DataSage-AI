@@ -43,7 +43,8 @@ def create_dataset_summary(df, dataset_info, semantic_info):
 st.set_page_config(
     page_title="DataSage AI",
     page_icon="📊",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
 load_css()
 

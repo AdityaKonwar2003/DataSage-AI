@@ -80,7 +80,7 @@ def show_analysis(df, dataset_info, semantic_info):
 
         recommendation = recommendations[i - 1]
 
-        chart_path = f"report/charts/chart_{i}.png"
+       
 
         try:
 
@@ -94,9 +94,9 @@ def show_analysis(df, dataset_info, semantic_info):
             insight = "Insight could not be generated."
 
         report_items.append({
-            "path": chart_path,
-            "title": recommendation["title"],
-            "insight": insight
+              "title": recommendation["title"],
+              "insight": insight,
+            "recommendation": recommendation
         })
 
     st.session_state["report_items"] = report_items

@@ -1,8 +1,9 @@
+import os
 import re
 import streamlit as st
 
 from report.pdf_generator import generate_pdf
-
+from analysis.charts import create_static_chart
 
 # =====================================================
 # FORMAT AI STORY
@@ -300,40 +301,87 @@ def show_report():
         st.subheader("📄 Professional Report")
 
         if st.button(
-            "⬇ Generate & Download PDF",
-            width="stretch"
+    "⬇ Generate & Download PDF",
+    width="stretch"
+):
+            with st.spinner(
+        "Generating professional report..."
+    ):
+                report_items = st.session_state.get(
+            "report_items",
+            []
+        )
+
+        df = st.session_state.get("df")
+
+        # =============================================
+        # CREATE STATIC CHARTS ONLY FOR PDF
+        # =============================================
+
+        os.makedirs(
+            "report/charts",
+            exist_ok=True
+        )
+
+        for index, item in enumerate(
+            report_items,
+            start=1
         ):
 
-            with st.spinner(
-                "Generating professional report..."
-            ):
-
-                # Get latest report items
-                report_items = st.session_state.get(
-                    "report_items",
-                    []
-                )
-
-                pdf = generate_pdf(
-                    summary,
-                    ai_story,
-                    forecast_text,
-                    report_items
-                )
-
-
-            with open(pdf, "rb") as file:
-
-                st.download_button(
-                    label="⬇ Download Report",
-                    data=file,
-                    file_name=pdf,
-                    mime="application/pdf",
-                    width="stretch"
-                )
-
-
-            st.success(
-                "✅ Report generated successfully "
-                "with analytics charts and insights!"
+            recommendation = item.get(
+                "recommendation"
             )
+
+            if recommendation is None:
+                continue
+
+            chart_type = recommendation.get(
+                "type"
+            )
+
+            chart_path = (
+                f"report/charts/chart_{index}.png"
+            )
+
+            try:
+
+                create_static_chart(
+                    df,
+                    recommendation,
+                    chart_type,
+                    chart_path
+                )
+
+                item["path"] = chart_path
+
+            except Exception as e:
+
+                print(
+                    f"Static chart creation failed: {e}"
+                )
+
+        # =============================================
+        # GENERATE PDF
+        # =============================================
+
+        pdf = generate_pdf(
+            summary,
+            ai_story,
+            forecast_text,
+            report_items
+        )
+
+    with open(pdf, "rb") as file:
+
+        st.download_button(
+            label=" Download Report",
+            data=file,
+            file_name=pdf,
+            mime="application/pdf",
+            width="stretch"
+        )
+
+    st.success(
+        "✅ Report generated successfully "
+        "with analytics charts and insights!"
+    )
