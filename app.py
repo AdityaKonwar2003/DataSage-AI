@@ -67,10 +67,7 @@ if "forecast_explanation" not in st.session_state:
 with st.sidebar:
 
     st.title("📊 DataSage AI")
-    st.image(
-    "https://raw.githubusercontent.com/streamlit/brand/master/logos/mark/streamlit-mark-color.png",
-    width=80
-)
+    st.image("assets/streamlit-logo.png", width=80)
     st.caption("AI-Powered Business Intelligence Platform")
 
     st.markdown("---")
