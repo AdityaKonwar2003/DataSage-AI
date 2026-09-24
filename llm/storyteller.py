@@ -41,24 +41,43 @@ Do not make up facts.
     return response.choices[0].message.content
 
 
-def ask_dataset(summary, question):
+def ask_dataset(summary, question, data_context):
 
     prompt = f"""
-You are DataSage AI.
+You are DataSage AI, an AI business analyst.
 
-Dataset Summary:
+DATASET SUMMARY:
 
 {summary}
 
-User Question:
+CALCULATED DATA CONTEXT:
+
+{data_context}
+
+USER QUESTION:
 
 {question}
 
-Answer only using the dataset summary.
-If the answer cannot be determined from the summary,
-clearly say so instead of guessing.
+Instructions:
 
-Keep the answer concise and professional.
+1. Answer using the supplied dataset information
+   and calculated data context.
+
+2. Prefer the calculated data context when answering
+   numerical questions.
+
+3. Do not invent values.
+
+4. If the available information is insufficient,
+   clearly say that the dataset does not contain
+   enough information to answer the question.
+
+5. Explain the answer clearly and professionally.
+
+6. When numerical values are available, include
+   the relevant values in your answer.
+
+Keep the response concise.
 """
 
     response = client.chat.completions.create(
@@ -76,6 +95,8 @@ Keep the answer concise and professional.
     )
 
     return response.choices[0].message.content
+
+  
 
 def explain_chart(chart_info):
 

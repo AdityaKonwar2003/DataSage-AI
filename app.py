@@ -181,24 +181,38 @@ st.markdown("---")
 
 # ---------------- MAIN APP ---------------- #
 
-# =====================================================
-# UPLOAD PAGE
-# =====================================================
-
 if page == "📂 Upload":
 
     st.header("📂 Upload Your Dataset")
 
-    st.info(
-"""
-Supported formats
+    st.markdown(
+        """
+        <div style="
+            text-align:center;
+            margin-top:10px;
+            margin-bottom:20px;
+        ">
+            <span style="
+                font-size:14px;
+                color:#6b7280;
+            ">
+                Supported formats: CSV&nbsp;&nbsp;•&nbsp;&nbsp;XLSX&nbsp;&nbsp;•&nbsp;&nbsp;XLS
+            </span>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
-• CSV
-
-• XLSX
-
-• XLS
-"""
+    st.markdown(
+        """
+        <style>
+        div[data-testid="stFileUploader"] {
+            max-width: 650px;
+            margin: 0 auto;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
     )
 
     # ==========================================

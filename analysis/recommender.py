@@ -3,51 +3,87 @@ import pandas as pd
 
 def recommend_charts(df, dataset_info, semantic_info):
     """
-    Recommend the best charts for the uploaded dataset.
+    Automatically recommend useful general-purpose charts
+    for an unknown dataset.
 
     Priority:
-    1. Use semantic detection (Sales, Profit, Revenue, etc.)
-    2. Fall back to detected numeric/date columns
+    1. Semantically detected KPI/category/date columns
+    2. Dataset-level numeric/category/date columns
+    3. General fallback charts
+
+    The function does not require the user to know anything
+    about the dataset.
     """
 
     recommendations = []
 
-    # -------------------------------
-    # Select KPI Columns
-    # -------------------------------
+    # ============================================================
+    # 1. NUMERIC / KPI COLUMNS
+    # ============================================================
 
     numeric = []
-    for col in semantic_info["kpi"]:
-        if pd.api.types.is_numeric_dtype(df[col]):
+
+    # First use semantically detected KPI columns
+    for col in semantic_info.get("kpi", []):
+        if (
+            col in df.columns
+            and pd.api.types.is_numeric_dtype(df[col])
+        ):
             numeric.append(col)
 
+    # Fall back to all numeric columns
     if not numeric:
-        numeric = dataset_info["numeric"]
+        numeric = [
+            col for col in dataset_info.get("numeric", [])
+            if col in df.columns
+            and pd.api.types.is_numeric_dtype(df[col])
+        ]
 
-    # -------------------------------
-    # Select Category Columns
-    # -------------------------------
+    # Remove duplicates while preserving order
+    numeric = list(dict.fromkeys(numeric))
 
-    categorical = semantic_info["category"]
+    # ============================================================
+    # 2. CATEGORICAL COLUMNS
+    # ============================================================
 
+    categorical = []
+
+    for col in semantic_info.get("category", []):
+        if col in df.columns:
+            categorical.append(col)
+
+    # Fall back to dataset categorical columns
     if not categorical:
-        categorical = dataset_info["categorical"]
+        categorical = [
+            col for col in dataset_info.get("categorical", [])
+            if col in df.columns
+        ]
 
-    # -------------------------------
-    # Select Date Column
-    # -------------------------------
+    categorical = list(dict.fromkeys(categorical))
+
+    # ============================================================
+    # 3. DATE / TIME COLUMNS
+    # ============================================================
 
     datetime_cols = []
 
-    if semantic_info["date"] is not None:
-        datetime_cols.append(semantic_info["date"])
+    semantic_date = semantic_info.get("date")
 
-    else:
-        datetime_cols = dataset_info["datetime"]
+    if semantic_date is not None:
+        if semantic_date in df.columns:
+            datetime_cols.append(semantic_date)
 
-    # -------------------------------
-    # LINE CHART
-    # -------------------------------
+    if not datetime_cols:
+        datetime_cols = [
+            col for col in dataset_info.get("datetime", [])
+            if col in df.columns
+        ]
+
+    datetime_cols = list(dict.fromkeys(datetime_cols))
+
+    # ============================================================
+    # 4. GENERAL TREND CHART
+    # ============================================================
 
     if datetime_cols and numeric:
 
@@ -58,45 +94,53 @@ def recommend_charts(df, dataset_info, semantic_info):
             "title": f"{numeric[0]} Over Time"
         })
 
-    # -------------------------------
-    # BAR CHART
-    # -------------------------------
+    # ============================================================
+    # 5. GENERAL CATEGORY COMPARISON
+    # ============================================================
 
     if categorical and numeric:
 
-        recommendations.append({
-            "type": "bar",
-            "x": categorical[0],
-            "y": numeric[0],
-            "title": f"{numeric[0]} by {categorical[0]}"
-        })
+        category_column = categorical[0]
 
-    # -------------------------------
-    # PIE CHART
-    # Only if category has <=10 values
-    # -------------------------------
+        # Avoid extremely high-cardinality columns
+        if df[category_column].nunique(dropna=True) <= 30:
+
+            recommendations.append({
+                "type": "bar",
+                "x": category_column,
+                "y": numeric[0],
+                "title": f"{numeric[0]} by {category_column}"
+            })
+
+    # ============================================================
+    # 6. CATEGORY DISTRIBUTION
+    # ============================================================
 
     if categorical and numeric:
+
+        category_column = categorical[0]
 
         try:
 
-            unique = df[categorical[0]].nunique()
+            unique_count = df[category_column].nunique(
+                dropna=True
+            )
 
-            if unique <= 10:
+            if 2 <= unique_count <= 8:
 
                 recommendations.append({
                     "type": "pie",
-                    "names": categorical[0],
+                    "names": category_column,
                     "values": numeric[0],
-                    "title": f"{numeric[0]} Distribution"
+                    "title": f"{numeric[0]} Distribution by {category_column}"
                 })
 
-        except:
+        except Exception:
             pass
 
-    # -------------------------------
-    # SCATTER PLOT
-    # -------------------------------
+    # ============================================================
+    # 7. NUMERIC RELATIONSHIP
+    # ============================================================
 
     if len(numeric) >= 2:
 
@@ -107,9 +151,9 @@ def recommend_charts(df, dataset_info, semantic_info):
             "title": f"{numeric[0]} vs {numeric[1]}"
         })
 
-    # -------------------------------
-    # HISTOGRAM
-    # -------------------------------
+    # ============================================================
+    # 8. NUMERIC DISTRIBUTION
+    # ============================================================
 
     if numeric:
 
@@ -119,9 +163,9 @@ def recommend_charts(df, dataset_info, semantic_info):
             "title": f"Distribution of {numeric[0]}"
         })
 
-    # -------------------------------
-    # BOX PLOT
-    # -------------------------------
+    # ============================================================
+    # 9. OUTLIER VIEW
+    # ============================================================
 
     if numeric:
 
@@ -131,16 +175,45 @@ def recommend_charts(df, dataset_info, semantic_info):
             "title": f"Outliers in {numeric[0]}"
         })
 
-    # -------------------------------
-    # CORRELATION HEATMAP
-    # (Added in next phase)
-    # -------------------------------
+    # ============================================================
+    # 10. CORRELATION HEATMAP
+    # ============================================================
 
-    if len(dataset_info["numeric"]) >= 2:
+    if len(numeric) >= 2:
 
         recommendations.append({
             "type": "heatmap",
             "title": "Correlation Heatmap"
         })
 
-    return recommendations
+    # ============================================================
+    # REMOVE DUPLICATE CHART TYPES / COMBINATIONS
+    # ============================================================
+
+    unique_recommendations = []
+
+    seen = set()
+
+    for recommendation in recommendations:
+
+        key = (
+            recommendation["type"],
+            recommendation.get("x"),
+            recommendation.get("y"),
+            recommendation.get("names"),
+            recommendation.get("values")
+        )
+
+        if key not in seen:
+
+            seen.add(key)
+            unique_recommendations.append(
+                recommendation
+            )
+
+    # ============================================================
+    # LIMIT AUTOMATIC CHARTS
+    # ============================================================
+
+    # Keep the dashboard useful without generating too many charts.
+    return unique_recommendations[:7]

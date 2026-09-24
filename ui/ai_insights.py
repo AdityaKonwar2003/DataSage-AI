@@ -1,7 +1,7 @@
 import streamlit as st
 
-
 from llm.storyteller import generate_story, ask_dataset
+from analysis.query_engine import analyze_question
 
 
 def show_ai(df, dataset_info, semantic_info):
@@ -12,13 +12,10 @@ def show_ai(df, dataset_info, semantic_info):
     # BUILD DATASET SUMMARY
     # =====================================================
 
-     # Use cached dataset summary
     summary = st.session_state.get(
         "dataset_summary",
         ""
     )
-
-    
 
     # =====================================================
     # AI REPORT
@@ -46,7 +43,9 @@ def show_ai(df, dataset_info, semantic_info):
 
     if st.session_state.get("ai_story"):
 
-        st.markdown(st.session_state["ai_story"])
+        st.markdown(
+            st.session_state["ai_story"]
+        )
 
         st.download_button(
             label="📥 Download AI Summary",
@@ -63,23 +62,90 @@ def show_ai(df, dataset_info, semantic_info):
 
     st.header("💬 Ask DataSage AI")
 
-    question = st.text_input(
-        "Ask a question about your dataset"
+    st.caption(
+        "Ask questions about your dataset. "
+        "Your conversation will remain visible."
     )
 
-    if st.button("🚀 Ask AI"):
+    # =====================================================
+    # INITIALIZE CHAT HISTORY
+    # =====================================================
 
-        if question.strip() == "":
+    if "chat_history" not in st.session_state:
 
-            st.warning("Please enter a question.")
+        st.session_state["chat_history"] = []
 
-        else:
+    # =====================================================
+    # DISPLAY PREVIOUS MESSAGES
+    # =====================================================
 
-            with st.spinner("Thinking..."):
+    for message in st.session_state["chat_history"]:
 
-                answer = ask_dataset(
-                    summary,
+        with st.chat_message(message["role"]):
+
+            st.markdown(
+                message["content"]
+            )
+
+    # =====================================================
+    # CHAT INPUT
+    # =====================================================
+
+    question = st.chat_input(
+        "Ask something about your dataset..."
+    )
+
+    # =====================================================
+    # PROCESS QUESTION
+    # =====================================================
+
+    if question:
+
+        # ---------------------------------------------
+        # DISPLAY USER QUESTION
+        # ---------------------------------------------
+
+        with st.chat_message("user"):
+
+            st.markdown(question)
+
+        # Save user question
+
+        st.session_state["chat_history"].append(
+            {
+                "role": "user",
+                "content": question
+            }
+        )
+
+        # ---------------------------------------------
+        # GENERATE ANSWER
+        # ---------------------------------------------
+
+        with st.chat_message("assistant"):
+
+            with st.spinner(
+                "Analyzing your dataset..."
+            ):
+
+                data_context = analyze_question(
+                    df,
                     question
                 )
 
-            st.success(answer)
+                answer = ask_dataset(
+                    summary,
+                    question,
+                    data_context
+                )
+
+            st.markdown(answer)
+
+        # Save AI answer
+
+        st.session_state["chat_history"].append(
+            {
+                "role": "assistant",
+                "content": answer
+            }
+        )
